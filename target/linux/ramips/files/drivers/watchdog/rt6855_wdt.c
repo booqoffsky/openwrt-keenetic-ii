@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 John Crispin <john at phrozen.org>
  * Copyright (C) 2026 Nickolay Savchenko <n.savchenko@axioma.lv>
+ * Copyright (C) 2026 booqoffsky
  */
 
 #include <linux/clk.h>
@@ -19,8 +20,33 @@
 #define TIMER_REG_TMR1LOAD	0x2c
 #define TIMER_REG_TMRSTAT	0x38
 
+/*
+ * The watchdog block sits in the palmbus window at 0x1fb0f100. It is
+ * disarmed through a fixed mapping in an early initcall (postcore runs
+ * before the driver core starts probing devices): the bootloader arms
+ * it with a short timeout, and it must be dead before any driver probe
+ * can stall the machine.
+ */
+#define RT6855_WDT_PHYS		0x1fb0f100
+
 #define TMR1CTL_ENABLE		(BIT(5) | BIT(25))
 #define TMR1CTL_RESTART		BIT(0)
+
+static int rt6855_wdt_disarm_early(void)
+{
+	void __iomem *base;
+
+	base = ioremap(RT6855_WDT_PHYS, 0x40);
+	if (!base)
+		return -ENOMEM;
+
+	writel(readl(base + TIMER_REG_TMR1CTL) & ~TMR1CTL_ENABLE,
+	       base + TIMER_REG_TMR1CTL);
+
+	iounmap(base);
+	return 0;
+}
+postcore_initcall(rt6855_wdt_disarm_early);
 
 struct rt6855_wdt {
 	void __iomem *base;
@@ -91,11 +117,6 @@ static int rt6855_wdt_stop(struct watchdog_device *wdd)
 	return 0;
 }
 
-static bool rt6855_wdt_is_running(struct rt6855_wdt *priv)
-{
-	return rt6855_wdt_read(priv, TIMER_REG_TMR1CTL) & TMR1CTL_ENABLE;
-}
-
 static const struct watchdog_info rt6855_wdt_info = {
 	.identity = "Ralink RT6855 watchdog",
 	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
@@ -152,15 +173,9 @@ static int rt6855_wdt_probe(struct platform_device *pdev)
 	watchdog_set_nowayout(&priv->wdd, nowayout);
 	platform_set_drvdata(pdev, priv);
 
-	if (rt6855_wdt_is_running(priv)) {
-		ret = rt6855_wdt_stop(&priv->wdd);
-		if (ret)
-			return ret;
-		ret = rt6855_wdt_start(&priv->wdd);
-		if (ret)
-			return ret;
-		set_bit(WDOG_HW_RUNNING, &priv->wdd.status);
-	}
+	/* Whatever the bootloader armed, disarm it for good; the watchdog
+	 * core re-enables it only when a daemon opens the device. */
+	rt6855_wdt_stop(&priv->wdd);
 
 	return devm_watchdog_register_device(dev, &priv->wdd);
 }
