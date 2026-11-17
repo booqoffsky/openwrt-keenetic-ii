@@ -9,8 +9,10 @@ case "$(board_name)" in
 zyxel,keenetic-giga-ii)
 	# RTL8367 ports are numbered in reverse order on the enclosure:
 	# switch port 4 is Internet, while ports 3 through 0 are LAN1-LAN4.
+	# The lan role must come first so it gets vlan1/eth0.1 and wan gets
+	# vlan2/eth0.2 (roles are numbered in order of appearance).
 	ucidef_add_switch "switch0" \
-		"4:wan" "3:lan" "2:lan" "1:lan" "0:lan" "6@eth0"
+		"3:lan" "2:lan" "1:lan" "0:lan" "4:wan" "6@eth0"
 	;;
 zyxel,keenetic-ii)
 	# The SoC-internal GSW fronts all five ports directly, but the
