@@ -85,7 +85,10 @@
 
 		pcie_reset: syscon@834 {
 			compatible = "ralink,rt6855-pcie-reset", "syscon";
-			reg = <0x834 0x4>;
+			/* 0x834 0x30 also covers 0x860, the EPHY clock gate
+			 * of the internal GSW used by the ethernet switch
+			 * bring-up (see gsw_rt6856.c). */
+			reg = <0x834 0x30>;
 		};
 
 		intc: interrupt-controller@40000 {

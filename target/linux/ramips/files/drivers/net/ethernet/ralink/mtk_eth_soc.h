@@ -509,6 +509,7 @@ extern const struct of_device_id of_fe_match[];
 void fe_w32(u32 val, unsigned reg);
 void fe_m32(struct fe_priv *priv, u32 clear, u32 set, unsigned reg);
 u32 fe_r32(unsigned reg);
+void __iomem *fe_get_base(void);
 
 int fe_set_clock_cycle(struct fe_priv *priv);
 void fe_csum_config(struct fe_priv *priv);

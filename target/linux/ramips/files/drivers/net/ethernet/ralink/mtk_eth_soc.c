@@ -165,6 +165,11 @@ u32 fe_r32(unsigned reg)
 	return __raw_readl(fe_base + reg);
 }
 
+void __iomem *fe_get_base(void)
+{
+	return fe_base;
+}
+
 void fe_reg_w32(u32 val, enum fe_reg reg)
 {
 	fe_w32(val, fe_reg_table[reg]);
