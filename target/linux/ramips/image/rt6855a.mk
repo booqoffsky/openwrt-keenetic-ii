@@ -1,10 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0-only
+#
+# The bootloader decompresses the LZMA payload of the uImage to ih_load
+# and then jumps to ih_ep, exactly like bootm. kernel_entry is NOT at
+# the image start on this platform (the linked image begins with padded
+# code/data), so the entry point is taken from the freshly built kernel
+# ELF at image time — a fixed offset would break on every kernel
+# rebuild.
 
 define Device/zyxel_keenetic-giga-ii
   SOC := rt6855a
   IMAGE_SIZE := 14976k
   DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := Keenetic Giga II
+  KERNEL_ENTRY = $$(shell LC_ALL=C readelf -h $(KDIR)/linux-$(LINUX_VERSION)/vmlinux 2>/dev/null | awk '/Entry point address:/ {print $$$$NF}')
   IMAGES += factory.bin
   IMAGE/factory.bin := $$(sysupgrade_bin) | pad-to $$$$(BLOCKSIZE) | \
 	check-size | \
