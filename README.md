@@ -1,3 +1,19 @@
+# OpenWRT для Zyxel Keenetic II (RT6856F)
+Сборка OpenWrt для роутера **Zyxel Keenetic II** (SoC Ralink RT6856F).
+Базируется на https://github.com/3mg/openwrt/tree/codex/rt6856-openwrt-upstream
+
+Ноябрь 2026, SNAPSHOT `r0-137ffc3b`, ядро Linux 6.18.60, target `ramips/rt6855a`.
+
+**Прошиваете на свой страх и риск.** 
+При неудаче восстановление возможно через recovery, bootloader при прошивке не затрагивается.
+
+**Еще не реализовано:**
+- индикация USB LED;
+- индикация INTERNET LED;
+- кнопка WPS (кнопки FN и RESET работают).
+
+---
+
 ![OpenWrt logo](include/logo.png)
 
 OpenWrt Project is a Linux operating system targeting embedded devices. Instead
