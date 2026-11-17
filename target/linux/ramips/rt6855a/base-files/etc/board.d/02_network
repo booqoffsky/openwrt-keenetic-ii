@@ -12,7 +12,16 @@ zyxel,keenetic-giga-ii)
 	ucidef_add_switch "switch0" \
 		"4:wan" "3:lan" "2:lan" "1:lan" "0:lan" "6@eth0"
 	;;
-esac
+zyxel,keenetic-ii)
+	# The SoC-internal GSW fronts all five ports directly, but the
+	# enclosure jack order is mirrored: the Internet jack is switch
+	# port 4 and LAN1-LAN4 jacks are ports 3, 2, 1, 0 (verified by
+	# cable tests). The lan role must come first so it gets
+	# vlan1/eth0.1 and wan gets vlan2/eth0.2 (roles are numbered in
+	# order of appearance).
+	ucidef_add_switch "switch0" \
+		"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "6@eth0"
+	;;esac
 
 board_config_flush
 

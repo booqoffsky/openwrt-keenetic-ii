@@ -23,3 +23,24 @@ define Device/zyxel_keenetic-giga-ii
 	rt2800-pci-firmware
 endef
 TARGET_DEVICES += zyxel_keenetic-giga-ii
+
+define Device/zyxel_keenetic-ii
+  SOC := rt6855a
+  IMAGE_SIZE := 14976k
+  DEVICE_VENDOR := Zyxel
+  DEVICE_MODEL := Keenetic II
+  KERNEL_ENTRY = $$(shell LC_ALL=C readelf -h $(KDIR)/linux-$(LINUX_VERSION)/vmlinux 2>/dev/null | awk '/Entry point address:/ {print $$$$NF}')
+  IMAGES += factory.bin
+  IMAGE/factory.bin := $$(sysupgrade_bin) | pad-to $$$$(BLOCKSIZE) | \
+	check-size | \
+	zyimage -d 0x5215 -v "ZyXEL Keenetic II"
+  DEVICE_PACKAGES := kmod-rt2800-pci \
+	kmod-usb2 kmod-usb-ohci kmod-usb-storage kmod-usb-storage-uas \
+	kmod-usb-ledtrig-usbport \
+	kmod-fs-vfat kmod-fs-ext4 kmod-nls-cp437 kmod-nls-utf8 \
+	block-mount dosfstools \
+	luci \
+	-wpad-basic-mbedtls wpad \
+	rt2800-pci-firmware
+endef
+TARGET_DEVICES += zyxel_keenetic-ii
